@@ -5,6 +5,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.ezzy.wordguesser.R
@@ -17,6 +19,8 @@ class ScoreFragment : Fragment() {
 
     private val binding get() = _binding!!
 
+    private lateinit var scoreViewModel: ScoreViewModel
+    private lateinit var scoreViewModelFactory: ScoreViewModelFactory
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,7 +29,15 @@ class ScoreFragment : Fragment() {
         _binding = FragmentScoreBinding.inflate(inflater, container, false)
 
         val scoreFragmentArgs by navArgs<ScoreFragmentArgs>()
-        binding.scoreText.text = scoreFragmentArgs.score.toString()
+        scoreViewModelFactory = ScoreViewModelFactory(scoreFragmentArgs.score)
+        scoreViewModel = ViewModelProvider(this, scoreViewModelFactory)
+            .get(ScoreViewModel::class.java)
+
+        scoreViewModel.score.observe(viewLifecycleOwner, Observer {
+            finalScore ->
+                binding.scoreText.text = finalScore.toString()
+        })
+//        binding.scoreText.text = scoreFragmentArgs.score.toString()
         binding.playAgainButton.setOnClickListener {
             onPlayAgain()
         }
