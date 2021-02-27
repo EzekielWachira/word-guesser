@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.ezzy.wordguesser.R
@@ -35,31 +36,28 @@ class GameFragment : Fragment() {
 
         binding.correctButton.setOnClickListener {
             gameViewModel.onCorrect()
-            updateWordText()
-            updateScoreText()
         }
         binding.skipButton.setOnClickListener {
             gameViewModel.onSkip()
-            updateScoreText()
-            updateWordText()
         }
-        updateWordText()
-        updateScoreText()
+
+        gameViewModel.score.observe(viewLifecycleOwner, Observer<Int> { newScore: Int? ->
+            binding.scoreText.text = newScore.toString()
+        })
+
+        gameViewModel.word.observe(viewLifecycleOwner, Observer<String> {
+            newWord: String? ->
+                binding.wordText.text = newWord
+        })
 
         return binding.root
     }
 
     private fun gameFinished(){
-        val action = GameFragmentDirections.actionGameFragmentToScoreFragment()
+        val action = GameFragmentDirections.actionGameFragmentToScoreFragment(
+            gameViewModel.score.value ?: 0
+        )
         findNavController().navigate(action)
-    }
-
-    private fun updateWordText(){
-        binding.wordText.text = gameViewModel.word
-    }
-
-    private fun updateScoreText(){
-        binding.scoreText.text = gameViewModel.score.toString()
     }
 
     override fun onDestroyView() {
